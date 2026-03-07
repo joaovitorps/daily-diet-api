@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "dev": "node src/server.ts",
-    "knex": "knex"
+    "knex": "knex",
+    "migrate:latest": "knex migrate:latest"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +14,8 @@
   "dependencies": {
     "fastify": "^5.8.1",
     "knex": "^3.1.0",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/knex": "^0.15.2",
