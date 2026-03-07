@@ -1,41 +1,26 @@
-import fastify from "fastify";
-import { db } from "../infra/database/database.ts";
-import * as z from "zod";
-import { randomUUID } from "node:crypto";
+import fastify, { type FastifyReply, type FastifyRequest } from "fastify";
+import cookie, { type FastifyCookieOptions } from "@fastify/cookie";
 
-const server = fastify();
-interface User {
-  id: string;
-  name: string;
-}
+import { routes } from "./routes.ts";
 
-const User = z.object({
-  name: z.string(),
-});
+const server = fastify({ logger: true });
 
-server.post("/user", async (request, reply) => {
-  const data = User.parse(request.body);
+server.register(cookie, {} as FastifyCookieOptions);
 
-  const insertedUser = await db<User>("user").insert(
-    {
-      id: randomUUID(),
-      name: data.name,
-    },
-    ["name"],
-  );
+server.register(routes);
 
-  console.log(insertedUser);
+export const middleware = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const cookies = request.headers.cookie;
 
-  reply.code(201).send();
-});
+  if (!cookies) {
+    return reply.code(401).send({ error: "Not authorized" });
+  }
 
-server.get("/user", async (request, reply) => {
-  const users = await db<User>("user").select();
-
-  console.log({ users });
-
-  reply.send(users).code(200);
-});
+  console.log(cookies);
+};
 
 server.listen({ port: 8000 }, (error, address) => {
   if (error) {
