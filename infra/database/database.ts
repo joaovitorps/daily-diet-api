@@ -7,6 +7,11 @@ export const config: Knex.Config = {
     filename: "./infra/database/dev.sqlite3",
   },
   useNullAsDefault: true,
+  pool: {
+    afterCreate: (conn: any, cb: any) => {
+      conn.run("PRAGMA FOREIGN_KEYS = ON", cb);
+    },
+  },
   migrations: {
     extension: "ts",
     directory: "./infra/database/migrations",
