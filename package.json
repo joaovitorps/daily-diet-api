@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "test": "vitest",
     "knex": "knex",
     "migrate:latest": "knex migrate:latest",
     "migrate:rollback": "knex migrate:rollback"
@@ -22,7 +23,10 @@
   "devDependencies": {
     "@types/knex": "^0.15.2",
     "@types/node": "^25.3.5",
+    "@types/supertest": "^7.2.0",
+    "supertest": "^7.2.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }
