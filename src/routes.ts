@@ -15,6 +15,7 @@ export const routes = (fastify: FastifyInstance, _options: Object) => {
     id: string;
     name: string;
     description: string;
+    happened_at: string;
     is_in_diet: boolean;
   }
 
@@ -59,7 +60,11 @@ export const routes = (fastify: FastifyInstance, _options: Object) => {
     const parsedBody = recipeBodySchema.parse(request.body);
 
     try {
-      await db<Recipe>("recipe").insert({ id: randomUUID(), ...parsedBody });
+      await db<Recipe>("recipe").insert({
+        id: randomUUID(),
+        happened_at: new Date().toISOString(),
+        ...parsedBody,
+      });
 
       reply.code(201).send();
     } catch (error: any) {
@@ -80,4 +85,41 @@ export const routes = (fastify: FastifyInstance, _options: Object) => {
 
     reply.code(200).send(recipes);
   });
+
+  fastify.put<{ Params: { id: string } }>(
+    "/recipe/:id",
+    async (request, reply) => {
+      const recipeBodySchema = z.object({
+        name: z.string().optional(),
+        description: z.string().optional(),
+        happened_at: z.string().optional(),
+        is_in_diet: z.boolean().optional(),
+      });
+
+      try {
+        const parsedBody = recipeBodySchema.parse(request.body);
+
+        const { id } = request.params;
+
+        // remove undefined keys because of 'exactOptionalPropertyTypes'
+        const dataToUpdate = Object.fromEntries(
+          Object.entries(parsedBody).filter(
+            ([_options, values]) => values != undefined,
+          ),
+        );
+
+        console.log(dataToUpdate);
+
+        if (Object.keys(parsedBody).length === 0) {
+          reply
+            .code(400)
+            .send({ error: "Please, specify at least one field to edit." });
+        }
+
+        await db<Recipe>("recipe").update(dataToUpdate).where("id", id);
+
+        reply.code(200).send();
+      } catch (error) {}
+    },
+  );
 };
