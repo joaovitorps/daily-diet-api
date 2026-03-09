@@ -3,7 +3,7 @@ import type { FastifyInstance } from "fastify";
 import * as z from "zod";
 
 import { db } from "../infra/database/database.ts";
-import { middleware } from "./server.ts";
+import { middleware } from "./app.ts";
 
 export const routes = (fastify: FastifyInstance, _options: Object) => {
   interface User {
@@ -20,22 +20,37 @@ export const routes = (fastify: FastifyInstance, _options: Object) => {
   }
 
   fastify.post("/user", async (request, reply) => {
-    const UserRequesSchema = z.object({
-      name: z.string(),
-    });
-    const data = UserRequesSchema.parse(request.body);
+    const UserRequesSchema = z
+      .object({
+        name: z.string().nonempty().min(3),
+      })
+      .transform(({ name }) => ({ name: name.trim() }));
 
-    const [insertedUser]: { id: string }[] = await db<User>("user")
-      .returning(["id"])
-      .insert({
-        id: randomUUID(),
-        name: data.name,
-      });
+    try {
+      const data = UserRequesSchema.parse(request.body);
 
-    if (insertedUser) {
-      reply.setCookie("id", insertedUser.id).code(201).send();
-    } else {
-      reply.code(500).send("Unexpected error happened");
+      const [insertedUser]: { id: string }[] = await db<User>("user")
+        .returning(["id"])
+        .insert({
+          id: randomUUID(),
+          name: data.name,
+        });
+
+      if (insertedUser) {
+        reply.setCookie("id", insertedUser.id).code(201).send();
+      } else {
+        reply.code(503).send({ message: "Service is not available." });
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        reply.code(400).send({
+          message: "One or more required fields are empty.",
+          reason: z.treeifyError(error),
+        });
+      } else {
+        console.error(error);
+        reply.code(500).send({ message: "Unexpected error happened." });
+      }
     }
   });
 
