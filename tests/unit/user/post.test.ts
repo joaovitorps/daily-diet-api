@@ -1,35 +1,10 @@
 import request from "supertest";
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-} from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { app } from "../../src/app.ts";
-import { db } from "../../infra/database/database.ts";
-
-beforeAll(async () => {
-  await db.migrate.latest().then(() => console.log("Migrations completed"));
-  await app.ready();
-});
-
-afterAll(async () => {
-  await db.migrate
-    .rollback(undefined, true)
-    .then(() => console.log("Migrations rolled back"));
-  app.close();
-});
-
-beforeEach(async () => {});
-
-afterEach(() => {});
+import { app } from "../../../src/app.ts";
 
 describe("POST /user", () => {
-  it("should create a user and return 201", async () => {
+  it("should create a user", async () => {
     const response = await request(app.server)
       .post("/user")
       .set("Accept", "application/json")
