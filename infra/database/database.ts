@@ -1,37 +1,34 @@
-import knex from "knex";
-import type { Knex } from "knex";
+import knex, { type Knex } from "knex";
 
-export const config: Knex.Config = {
-  client: "sqlite3",
-  connection: {
-    filename: "./infra/database/dev.sqlite3",
-  },
-  useNullAsDefault: true,
-  pool: {
-    afterCreate: (conn: any, cb: any) => {
-      conn.run("PRAGMA FOREIGN_KEYS = ON", cb);
+import { env, type EnvEnum } from "../environment.ts";
+
+const defaultDevConfig = (filename: string): Knex.Config => {
+  return {
+    client: "sqlite3",
+    connection: {
+      filename,
     },
-  },
-  migrations: {
-    extension: "ts",
-    directory: "./infra/database/migrations",
-  },
-
-  //   production: {
-  //     client: "postgresql",
-  //     connection: {
-  //       database: "my_db",
-  //       user: "username",
-  //       password: "password",
-  //     },
-  //     pool: {
-  //       min: 2,
-  //       max: 10,
-  //     },
-  //     migrations: {
-  //       tableName: "knex_migrations",
-  //     },
-  //   },
+    useNullAsDefault: true,
+    pool: {
+      afterCreate: (conn: any, cb: any) => {
+        conn.run("PRAGMA FOREIGN_KEYS = ON", cb);
+      },
+    },
+    migrations: {
+      extension: "ts",
+      directory: "./infra/database/migrations",
+    },
+  };
 };
 
-export const db = knex(config);
+export const config: Record<EnvEnum, Knex.Config> = {
+  development: {
+    ...defaultDevConfig("./infra/database/dev.sqlite3"),
+  },
+  test: {
+    ...defaultDevConfig(":memory:"),
+  },
+  production: {},
+};
+
+export const db = knex(config[env.NODE_ENV]);
