@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import * as z from "zod";
 
 import { db } from "../../infra/database/database.ts";
+import { authenticate } from "../middleware.ts";
 
 export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
   interface meal {
@@ -13,22 +14,25 @@ export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
     is_in_diet: boolean;
   }
 
-  fastify.post("/meal", async (request, reply) => {
-    const mealBodySchema = z.object({
-      user_id: z.uuid(),
-      name: z.string(),
-      description: z.string(),
-      is_in_diet: z.boolean(),
-    });
-
-    try {
-      const parsedBody = mealBodySchema.parse(request.body);
-
-      await db<meal>("meal").insert({
-        id: randomUUID(),
-        happened_at: new Date().toISOString(),
-        ...parsedBody,
+  fastify.post(
+    "/meal",
+    { preHandler: [authenticate] },
+    async (request, reply) => {
+      const mealBodySchema = z.object({
+        user_id: z.uuid(),
+        name: z.string(),
+        description: z.string(),
+        is_in_diet: z.boolean(),
       });
+
+      try {
+        const parsedBody = mealBodySchema.parse(request.body);
+
+        await db<meal>("meal").insert({
+          id: randomUUID(),
+          happened_at: new Date().toISOString(),
+          ...parsedBody,
+        });
 
         reply.code(201).send();
       } catch (error: any) {
@@ -45,20 +49,26 @@ export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
           });
         }
 
-      console.error(error);
-      reply.code(500).send({ message: "Unexpected error happened." });
-      throw error;
-    }
-  });
+        console.error(error);
+        reply.code(500).send({ message: "Unexpected error happened." });
+        throw error;
+      }
+    },
+  );
 
-  fastify.get("/meal", async (_request, reply) => {
-    const meals = await db<meal>("meal").select();
+  fastify.get(
+    "/meal",
+    { preHandler: [authenticate] },
+    async (_request, reply) => {
+      const meals = await db<meal>("meal").select();
 
-    reply.code(200).send(meals);
-  });
+      reply.code(200).send(meals);
+    },
+  );
 
   fastify.put<{ Params: { id: string } }>(
     "/meal/:id",
+    { preHandler: [authenticate] },
     async (request, reply) => {
       const mealBodySchema = z.object({
         name: z.string().optional(),
@@ -89,6 +99,17 @@ export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
 
         reply.code(200).send();
       } catch (error) {}
+    },
+  );
+
+  fastify.delete<{ Params: { id: string } }>(
+    "/meal/:id",
+    { preHandler: [authenticate] },
+    async (request, reply) => {
+      const { id } = request.params;
+
+      await db<meal>("meal").delete().where("id", id);
+      reply.code(200).send();
     },
   );
 };

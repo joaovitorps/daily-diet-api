@@ -9,14 +9,3 @@ export const app = fastify({ logger: { level: "info" } });
 app.register(fastifyCookie, {} as FastifyCookieOptions);
 app.register(userRoutes);
 app.register(mealRoutes);
-
-export const middleware = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const cookies = request.cookies.id;
-
-  if (!cookies) {
-    return reply.code(401).send({ error: "Not authorized" });
-  }
-};

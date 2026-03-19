@@ -1,8 +1,8 @@
 import * as z from "zod";
 import type { FastifyInstance } from "fastify";
 
-import { middleware } from "../app.ts";
 import { getAll, insert } from "../models/User.ts";
+import { authenticate } from "../middleware.ts";
 
 export const userRoutes = (fastify: FastifyInstance) => {
   fastify.post("/user", async (request, reply) => {
@@ -43,7 +43,7 @@ export const userRoutes = (fastify: FastifyInstance) => {
 
   fastify.get(
     "/user",
-    { preHandler: [middleware] },
+    { preHandler: [authenticate] },
     async (_request, reply) => {
       const users = await getAll();
 
