@@ -9,6 +9,7 @@ export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
   interface meal {
     id: string;
     name: string;
+    user_id: string;
     description: string;
     happened_at: string;
     is_in_diet: boolean;
@@ -19,7 +20,6 @@ export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
     { preHandler: [authenticate] },
     async (request, reply) => {
       const mealBodySchema = z.object({
-        user_id: z.uuid(),
         name: z.string(),
         description: z.string(),
         is_in_diet: z.coerce.boolean(),
@@ -31,24 +31,12 @@ export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
         await db<meal>("meal").insert({
           id: randomUUID(),
           happened_at: new Date().toISOString(),
+          user_id: request.userId,
           ...parsedBody,
         });
 
         reply.code(201).send();
       } catch (error: any) {
-        const body = request.body as { user_id?: string } | null;
-        const containsAny = [
-          "FOREIGN KEY constraint failed",
-          "Invalid UUID",
-        ].some((sub) => error.message.includes(sub));
-
-        if (containsAny) {
-          return reply.code(400).send({
-            error: "Bad Request",
-            message: `The provided user_id (${body?.user_id}) does not exist in the database.`,
-          });
-        }
-
         console.error(error);
         reply.code(500).send({ message: "Unexpected error happened." });
         throw error;
@@ -59,8 +47,10 @@ export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
   fastify.get(
     "/meal",
     { preHandler: [authenticate] },
-    async (_request, reply) => {
-      const meals = await db<meal>("meal").select();
+    async (request, reply) => {
+      const userId = request.userId;
+
+      const meals = await db<meal>("meal").select().where({ user_id: userId });
 
       reply.code(200).send(meals);
     },
