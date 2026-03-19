@@ -41,23 +41,23 @@ beforeEach(async () => {
 
 [Useful `dev.to` link for reference](https://dev.to/rukykf/integration-testing-with-nodejs-jest-knex-and-sqlite-in-memory-databases-2ila)
 
-### Regras da aplicação
+### Application Rules
 
-- [x] Deve ser possível criar um usuário
-- [x] Deve ser possível identificar o usuário entre as requisições
-- [x] Deve ser possível registrar uma refeição feita, com as seguintes informações:
-      _As refeições devem ser relacionadas a um usuário._
-  - [x] Nome
-  - [x] Descrição
-  - [x] Data e Hora
-  - [x] Está dentro ou não da dieta
-- [x] Deve ser possível editar uma refeição, podendo alterar todos os dados acima
-- [ ] Deve ser possível apagar uma refeição
-- [ ] Deve ser possível listar todas as refeições de um usuário
-- [ ] Deve ser possível visualizar uma única refeição
-- [ ] Deve ser possível recuperar as métricas de um usuário
-  - [ ] Quantidade total de refeições registradas
-  - [ ] Quantidade total de refeições dentro da dieta
-  - [ ] Quantidade total de refeições fora da dieta
-  - [ ] Melhor sequência de refeições dentro da dieta
-- [ ] O usuário só pode visualizar, editar e apagar as refeições o qual ele criou
+- [x] It should be possible to create a user
+- [x] It should be possible to identify the user between requests
+- [x] It should be possible to record a meal with the following information:
+      _Meals must be related to a user._
+  - [x] Name
+  - [x] Description
+  - [x] Date and Time
+  - [x] Is it within the diet or not
+- [x] It should be possible to edit a meal, being able to change all the data above
+- [ ] It should be possible to delete a meal
+- [ ] It should be possible to list all the meals of a user
+- [ ] It should be possible to view a single meal
+- [ ] It should be possible to retrieve a user's metrics
+  - [ ] Total number of meals recorded
+  - [ ] Total number of meals within the diet
+  - [ ] Total number of meals outside the diet
+  - [ ] Best sequence of meals within the diet
+- [ ] The user can only view, edit, and delete the meals they created
