@@ -30,19 +30,20 @@ export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
         ...parsedBody,
       });
 
-      reply.code(201).send();
-    } catch (error: any) {
-      const containsAny = [
-        "FOREIGN KEY constraint failed",
-        "Invalid UUID",
-      ].some((sub) => error.message.includes(sub));
+        reply.code(201).send();
+      } catch (error: any) {
+        const body = request.body as { user_id?: string } | null;
+        const containsAny = [
+          "FOREIGN KEY constraint failed",
+          "Invalid UUID",
+        ].some((sub) => error.message.includes(sub));
 
-      if (containsAny) {
-        return reply.code(400).send({
-          error: "Bad Request",
-          message: `The provided user_id (${request.body.user_id}) does not exist in the database.`,
-        });
-      }
+        if (containsAny) {
+          return reply.code(400).send({
+            error: "Bad Request",
+            message: `The provided user_id (${body?.user_id}) does not exist in the database.`,
+          });
+        }
 
       console.error(error);
       reply.code(500).send({ message: "Unexpected error happened." });
