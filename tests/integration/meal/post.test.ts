@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import request from "supertest";
 
 import { app } from "../../../src/app.ts";
+import { getSessionId } from "../../utils.ts";
 
 describe("POST /meal", () => {
   it.only("should create a meal", async () => {
@@ -14,19 +15,14 @@ describe("POST /meal", () => {
       .send(userBody);
 
     const cookies = createUserResponse.get("Set-Cookie") as string[];
-    const [_cookieName, cookieValue] =
-      cookies[0]
-        ?.split(";")
-        .filter((positions) => {
-          return positions.includes("id=");
-        })[0]
-        ?.split("=") || [];
+
+    const [_cookieName, cookieValue] = getSessionId(cookies);
 
     const mealBody = {
       user_id: cookieValue,
       name: "meal",
       description: "a meal",
-      is_in_diet: false,
+      is_in_diet: 0,
     };
 
     await request(app.server)
@@ -34,6 +30,12 @@ describe("POST /meal", () => {
       .send(mealBody)
       .set("Cookie", cookies)
       .expect(201);
+
+    const allMealsRequest = await request(app.server)
+      .get("/meal")
+      .set("Cookie", cookies);
+
+    expect(allMealsRequest.body).toEqual([expect.objectContaining(mealBody)]);
   });
 
   it.only("should fail on unknown id", async () => {
