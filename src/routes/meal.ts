@@ -5,26 +5,28 @@ import * as z from "zod";
 import { db } from "../../infra/database/database.ts";
 import { authenticate } from "../middleware.ts";
 
-export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
-  interface meal {
-    id: string;
-    name: string;
-    user_id: string;
-    description: string;
-    happened_at: string;
-    is_in_diet: boolean;
-  }
+interface meal {
+  id: string;
+  name: string;
+  user_id: string;
+  description: string;
+  happened_at: string;
+  is_in_diet: boolean;
+}
 
+const mealBodySchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  is_in_diet: z.coerce.boolean(),
+});
+
+export type MealRequestBody = z.infer<typeof mealBodySchema>;
+
+export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
   fastify.post(
     "/meal",
     { preHandler: [authenticate] },
     async (request, reply) => {
-      const mealBodySchema = z.object({
-        name: z.string(),
-        description: z.string(),
-        is_in_diet: z.coerce.boolean(),
-      });
-
       try {
         const parsedBody = mealBodySchema.parse(request.body);
 
@@ -53,6 +55,22 @@ export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
       const meals = await db<meal>("meal").select().where({ user_id: userId });
 
       reply.code(200).send(meals);
+    },
+  );
+
+  fastify.get<{ Params: { id: string } }>(
+    "/meal/:id",
+    { preHandler: [authenticate] },
+    async (request, reply) => {
+      const { id } = request.params;
+
+      const meal = await db<meal>("meal").select().where({ id }).first();
+
+      if (meal) {
+        meal.is_in_diet = Boolean(meal?.is_in_diet);
+      }
+
+      return reply.code(200).send(meal);
     },
   );
 
