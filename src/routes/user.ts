@@ -4,14 +4,16 @@ import type { FastifyInstance } from "fastify";
 import { getAll, insert } from "../models/User.ts";
 import { authenticate } from "../middleware.ts";
 
+const UserRequesSchema = z
+  .object({
+    name: z.string().nonempty().min(3),
+  })
+  .transform(({ name }) => ({ name: name.trim() }));
+
+export type UserRequestBody = z.infer<typeof UserRequesSchema>;
+
 export const userRoutes = (fastify: FastifyInstance) => {
   fastify.post("/user", async (request, reply) => {
-    const UserRequesSchema = z
-      .object({
-        name: z.string().nonempty().min(3),
-      })
-      .transform(({ name }) => ({ name: name.trim() }));
-
     try {
       const data = UserRequesSchema.parse(request.body);
 

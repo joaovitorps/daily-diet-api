@@ -54,7 +54,7 @@ beforeEach(async () => {
 - [x] It should be possible to edit a meal, being able to change all the data above
 - [x] It should be possible to delete a meal
 - [x] It should be possible to list all the meals of a user
-- [ ] It should be possible to view a single meal
+- [x] It should be possible to view a single meal
 - [ ] It should be possible to retrieve a user's metrics
   - [ ] Total number of meals recorded
   - [ ] Total number of meals within the diet

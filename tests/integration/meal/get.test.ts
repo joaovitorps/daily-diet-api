@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import request from "supertest";
 import { app } from "../../../src/app.ts";
-import { getSessionId } from "../../utils.ts";
+import {
+  createMealResponse,
+  createUserResponse,
+  getSessionId,
+} from "../../utils.ts";
+import type { MealRequestBody } from "../../../src/routes/meal.ts";
 
 describe("GET /meals", () => {
   it("should return all means", async () => {
@@ -50,6 +55,43 @@ describe("GET /meals", () => {
     );
     expect(allMealsResponse.body[1]).toEqual(
       expect.objectContaining(mealBodySecondExample),
+    );
+  });
+});
+
+describe("GET /meals/:id", () => {
+  it.only("should return ONE meal", async () => {
+    const { cookies, userId } = await createUserResponse();
+    await createMealResponse(cookies);
+
+    const mealBody: MealRequestBody = {
+      name: "Another meal",
+      description: "Very delicious!",
+      is_in_diet: false,
+    };
+
+    await createMealResponse(cookies, mealBody);
+
+    const allMealsResponse = await request(app.server)
+      .get("/meal")
+      .set("Cookie", cookies);
+
+    console.log(allMealsResponse.body);
+
+    const mealId = allMealsResponse.body[1].id;
+
+    const getOneMealResponse = await request(app.server)
+      .get(`/meal/${mealId}`)
+      .send(mealBody)
+      .set("Cookie", cookies)
+      .expect(200);
+
+    expect(getOneMealResponse.body).toEqual(
+      expect.objectContaining({
+        ...mealBody,
+        id: mealId,
+        user_id: userId,
+      }),
     );
   });
 });
