@@ -1,4 +1,4 @@
-import { fastify, type FastifyReply, type FastifyRequest } from "fastify";
+import { fastify } from "fastify";
 import { fastifyCookie, type FastifyCookieOptions } from "@fastify/cookie";
 
 import { userRoutes } from "./routes/user.ts";
