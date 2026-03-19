@@ -22,7 +22,7 @@ export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
         user_id: z.uuid(),
         name: z.string(),
         description: z.string(),
-        is_in_diet: z.boolean(),
+        is_in_diet: z.coerce.boolean(),
       });
 
       try {
@@ -108,8 +108,23 @@ export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
     async (request, reply) => {
       const { id } = request.params;
 
-      await db<meal>("meal").delete().where("id", id);
-      reply.code(200).send();
+      const meal = await db<meal>("meal").where({ id }).first();
+
+      if (!meal) {
+        return reply
+          .code(400)
+          .send({ message: `Meal with id ${id} not found.` });
+      }
+
+      const deletedRows = await db<meal>("meal").where({ id }).del();
+
+      if (deletedRows <= 0) {
+        return reply
+          .code(500)
+          .send({ error: "Failed to delete the requested meal." });
+      }
+
+      return reply.code(200).send();
     },
   );
 };
