@@ -3,8 +3,8 @@ import request from "supertest";
 
 import { app } from "../../../src/app.ts";
 
-describe("POST /recipe", () => {
-  it.only("should create a recipe", async () => {
+describe("POST /meal", () => {
+  it.only("should create a meal", async () => {
     const userBody = {
       name: "John",
     };
@@ -22,16 +22,16 @@ describe("POST /recipe", () => {
         })[0]
         ?.split("=") || [];
 
-    const recipeBody = {
+    const mealBody = {
       user_id: cookieValue,
-      name: "recipe",
-      description: "a recipe",
+      name: "meal",
+      description: "a meal",
       is_in_diet: false,
     };
 
     await request(app.server)
-      .post("/recipe")
-      .send(recipeBody)
+      .post("/meal")
+      .send(mealBody)
       .set("Cookie", cookies)
       .expect(201);
   });
@@ -47,21 +47,21 @@ describe("POST /recipe", () => {
 
     const cookies = createUserResponse.get("Set-Cookie") as string[];
 
-    const recipeBody = {
+    const mealBody = {
       user_id: "unknown_id",
-      name: "recipe",
-      description: "a recipe",
+      name: "meal",
+      description: "a meal",
       is_in_diet: false,
     };
 
     const response = await request(app.server)
-      .post("/recipe")
-      .send(recipeBody)
+      .post("/meal")
+      .send(mealBody)
       .set("Cookie", cookies)
       .expect(400);
 
     expect(response.body).toMatchObject({
-      message: `The provided user_id (${recipeBody.user_id}) does not exist in the database.`,
+      message: `The provided user_id (${mealBody.user_id}) does not exist in the database.`,
     });
   });
 });

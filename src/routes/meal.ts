@@ -4,8 +4,8 @@ import * as z from "zod";
 
 import { db } from "../../infra/database/database.ts";
 
-export const recipeRoutes = (fastify: FastifyInstance, _options: Object) => {
-  interface Recipe {
+export const mealRoutes = (fastify: FastifyInstance, _options: Object) => {
+  interface meal {
     id: string;
     name: string;
     description: string;
@@ -13,8 +13,8 @@ export const recipeRoutes = (fastify: FastifyInstance, _options: Object) => {
     is_in_diet: boolean;
   }
 
-  fastify.post("/recipe", async (request, reply) => {
-    const recipeBodySchema = z.object({
+  fastify.post("/meal", async (request, reply) => {
+    const mealBodySchema = z.object({
       user_id: z.uuid(),
       name: z.string(),
       description: z.string(),
@@ -22,9 +22,9 @@ export const recipeRoutes = (fastify: FastifyInstance, _options: Object) => {
     });
 
     try {
-      const parsedBody = recipeBodySchema.parse(request.body);
+      const parsedBody = mealBodySchema.parse(request.body);
 
-      await db<Recipe>("recipe").insert({
+      await db<meal>("meal").insert({
         id: randomUUID(),
         happened_at: new Date().toISOString(),
         ...parsedBody,
@@ -50,16 +50,16 @@ export const recipeRoutes = (fastify: FastifyInstance, _options: Object) => {
     }
   });
 
-  fastify.get("/recipe", async (_request, reply) => {
-    const recipes = await db<Recipe>("recipe").select();
+  fastify.get("/meal", async (_request, reply) => {
+    const meals = await db<meal>("meal").select();
 
-    reply.code(200).send(recipes);
+    reply.code(200).send(meals);
   });
 
   fastify.put<{ Params: { id: string } }>(
-    "/recipe/:id",
+    "/meal/:id",
     async (request, reply) => {
-      const recipeBodySchema = z.object({
+      const mealBodySchema = z.object({
         name: z.string().optional(),
         description: z.string().optional(),
         happened_at: z.string().optional(),
@@ -67,7 +67,7 @@ export const recipeRoutes = (fastify: FastifyInstance, _options: Object) => {
       });
 
       try {
-        const parsedBody = recipeBodySchema.parse(request.body);
+        const parsedBody = mealBodySchema.parse(request.body);
 
         const { id } = request.params;
 
@@ -84,7 +84,7 @@ export const recipeRoutes = (fastify: FastifyInstance, _options: Object) => {
             .send({ error: "Please, specify at least one field to edit." });
         }
 
-        await db<Recipe>("recipe").update(dataToUpdate).where("id", id);
+        await db<meal>("meal").update(dataToUpdate).where("id", id);
 
         reply.code(200).send();
       } catch (error) {}
