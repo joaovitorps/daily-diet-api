@@ -50,3 +50,7 @@ export const createMealResponse = async (
 
   return { createMealResponse };
 };
+
+export const getUserMetricsResponse = async (cookies: string[]) => {
+  return await request(app.server).get("/user/metrics").set("Cookie", cookies);
+};

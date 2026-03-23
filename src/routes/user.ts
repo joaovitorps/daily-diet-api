@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 
 import { getAll, insert } from "../models/User.ts";
 import { authenticate } from "../middleware.ts";
+import { getAllByUserId } from "../models/Meal.ts";
 
 const UserRequesSchema = z
   .object({
@@ -50,6 +51,45 @@ export const userRoutes = (fastify: FastifyInstance) => {
       const users = await getAll();
 
       reply.send(users).code(200);
+    },
+  );
+
+  fastify.get(
+    "/user/metrics",
+    { preHandler: [authenticate] },
+    async (request, reply) => {
+      const mealData = await getAllByUserId(request.userId);
+
+      const mealsRecorded = mealData.length;
+      const mealsInDiet = mealData.filter((meal) => meal.is_in_diet).length;
+      const mealsOutOfDiet = mealData.filter((meal) => !meal.is_in_diet).length;
+      const { bestSequenceInDiet } = mealData.reduce(
+        (accumulator, current) => {
+          let { bestSequenceInDiet, currentSequence } = accumulator;
+
+          if (current.is_in_diet) {
+            currentSequence++;
+          } else {
+            currentSequence = 0;
+          }
+
+          if (currentSequence > bestSequenceInDiet) {
+            bestSequenceInDiet = currentSequence;
+          }
+
+          return { bestSequenceInDiet, currentSequence };
+        },
+        { bestSequenceInDiet: 0, currentSequence: 0 },
+      );
+
+      const metrics = {
+        mealsRecorded,
+        mealsInDiet,
+        mealsOutOfDiet,
+        bestSequenceInDiet,
+      };
+
+      return reply.code(200).send(metrics);
     },
   );
 };
