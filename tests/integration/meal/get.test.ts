@@ -76,8 +76,6 @@ describe("GET /meals/:id", () => {
       .get("/meal")
       .set("Cookie", cookies);
 
-    console.log(allMealsResponse.body);
-
     const mealId = allMealsResponse.body[1].id;
 
     const getOneMealResponse = await request(app.server)
@@ -93,5 +91,31 @@ describe("GET /meals/:id", () => {
         user_id: userId,
       }),
     );
+  });
+
+  it("should not be able to get if not the same user", async () => {
+    const { cookies } = await createUserResponse();
+
+    await createMealResponse(cookies);
+
+    const userResponse = await createUserResponse();
+
+    const allMealsResponse = await request(app.server)
+      .get("/meal")
+      .set("Cookie", cookies);
+
+    const mealId = allMealsResponse.body[0].id;
+
+    console.log(userResponse.userId);
+
+    await request(app.server)
+      .get(`/meal/${mealId}`)
+      .set("Cookie", userResponse.cookies)
+      .expect(400)
+      .then((response) =>
+        expect(response.body.message).toEqual(
+          `Meal with id ${mealId} not found.`,
+        ),
+      );
   });
 });

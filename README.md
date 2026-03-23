@@ -60,4 +60,4 @@ beforeEach(async () => {
   - [x] Total number of meals within the diet
   - [x] Total number of meals outside the diet
   - [x] Best sequence of meals within the diet
-- [ ] The user can only view, edit, and delete the meals they created
+- [x] The user can only view, edit, and delete the meals they created
