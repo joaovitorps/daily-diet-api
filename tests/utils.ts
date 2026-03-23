@@ -38,7 +38,7 @@ export const createMealResponse = async (
   if (!mealBody) {
     mealBody = {
       name: "Rice and beans",
-      description: "A place of rice and beans",
+      description: "A plate of rice and beans",
       is_in_diet: true,
     };
   }
