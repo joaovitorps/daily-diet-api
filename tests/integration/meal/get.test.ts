@@ -60,7 +60,7 @@ describe("GET /meals", () => {
 });
 
 describe("GET /meals/:id", () => {
-  it.only("should return ONE meal", async () => {
+  it("should return ONE meal", async () => {
     const { cookies, userId } = await createUserResponse();
     await createMealResponse(cookies);
 
